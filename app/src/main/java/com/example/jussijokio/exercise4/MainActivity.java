@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+    // this is coding
         //init ui elements
         saveMessageField = (TextView) findViewById(R.id.SaveMessageField);
         receiveMessageField = (TextView) findViewById(R.id.ReceiveMessageField);
