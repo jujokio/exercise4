@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.widget.LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:textAlignment="center"
+    tools:context="com.example.jussijokio.exercise4.MainActivity">
+
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:backgroundTint="@color/colorPrimary"
+        android:gravity="center"
+        android:textAlignment="center"
+        android:orientation="vertical">
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimary"
+            android:gravity="center"
+            android:labelFor="@+id/ReceiveMessageField"
+            android:text="Saved message:"
+            android:padding="15dp"
+            android:textColor="@android:color/background_light"
+            android:textSize="20dp" />
+
+        <EditText
+            android:id="@+id/ReceiveMessageField"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="15dp"
+            android:focusable="false"
+            android:background="@android:color/transparent"
+            android:backgroundTint="@color/colorAccent"
+            android:hint="Received this location-bound message."
+            android:text=""
+            android:textSize="20dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimary"
+            android:gravity="center"
+            android:labelFor="@+id/SaveMessageField"
+            android:text="Your message:"
+            android:padding="15dp"
+            android:textColor="@android:color/background_light"
+            android:textSize="20dp" />
+
+        <EditText
+            android:id="@+id/SaveMessageField"
+            android:layout_width="match_parent"
+            android:layout_height="33dp"
+            android:layout_weight="1"
+            android:padding="15dp"
+            android:background="@android:color/transparent"
+            android:backgroundTint="@android:color/holo_green_light"
+            android:hint="Insert your location-bound message."
+            android:text=""
+            android:textSize="20dp" />
+
+        <Button
+            android:id="@+id/SaveMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="12dp"
+            android:layout_weight="1"
+            android:text="Save message"
+            android:textSize="20dp" />
+    </LinearLayout>
+
+
+</android.widget.LinearLayout>
