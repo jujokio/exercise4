@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private String message;
     public Location last;
 
-
+    //eetu liittyi dev tiimiin
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
