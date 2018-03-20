@@ -6,15 +6,14 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:textSize="20dp"
+
     tools:context="com.example.jussijokio.exercise4.LoginActivity">
 
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        >
+        android:orientation="vertical">
 
         <EditText
             android:id="@+id/UsernameField"
@@ -22,6 +21,7 @@
             android:layout_height="wrap_content"
             android:background="@color/colorPrimaryLight"
             android:ems="10"
+            android:textSize="30dp"
             android:hint="Username"
             android:layout_marginBottom="20dp"
             android:inputType="textPersonName"
@@ -35,6 +35,7 @@
             android:background="@color/colorPrimaryLight"
             android:textAlignment="center"
             android:ems="10"
+            android:textSize="30dp"
             android:hint="Password"
             android:paddingBottom="20dp"
             android:inputType="textPassword"/>
@@ -52,12 +53,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Login"
+            android:textSize="20dp"
             android:layout_marginBottom="20dp" />
 
         <Button
             android:id="@+id/RegisterButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textSize="20dp"
             android:text="Register" />
     </LinearLayout>
 </LinearLayout>

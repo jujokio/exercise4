@@ -41,6 +41,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        if (!CheckLoginActive()){
+            Intent gotoLogin = new Intent(this, LoginActivity.class);
+            startActivity(gotoLogin);
+        }
     // this is coding
         //init ui elements
         saveMessageField = (TextView) findViewById(R.id.SaveMessageField);
@@ -154,6 +158,12 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(getBaseContext(),"Message saved.",
                 Toast.LENGTH_LONG).show();
         saveMessageField.setText(null);
+    }
+
+
+    public boolean CheckLoginActive() {
+
+        return false;
     }
 
 }
