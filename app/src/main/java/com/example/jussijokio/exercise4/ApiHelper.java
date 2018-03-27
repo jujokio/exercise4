@@ -6,157 +6,116 @@ import android.util.Log;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.concurrent.Callable;
 
 /**
  * Created by Jussi Jokio on 20.3.2018.
  */
 
-public class ApiHelper {
+public class ApiHelper implements Callable<JSONObject> {
     static final String apiUrl = "https://hangouts-mobisocial-18.herokuapp.com/";
+    public JSONObject apiResponse;
+    public String method;
+    public JSONObject payload;
+    public String url;
 
-    public interface APIResponse {
-        void processFinish(JSONObject output);
-    }
 
-    static class AsyncApi extends AsyncTask {
-        public APIResponse apiResponse;
+    @Override
+    public JSONObject call() throws Exception {
+        Log.e("ApiHelper", "do in background init");
 
-        public AsyncApi(APIResponse response){
-            Log.e("ApiHelper", "async init");
-            apiResponse = response;
+        if(method == null || payload == null || url == null){
+            throw new Exception("No parameters setted! use ApiHelper.SetParams()");
         }
 
-        @Override
-        protected Object doInBackground(Object[] objects) {
-            Log.e("ApiHelper", "do in background init");
-            String method = (String) objects[0];
-            JSONObject payload = (JSONObject) objects[1];
-            String url = (String) objects[2];
-            Log.e("ApiHelper", "Using HTTp-method: " + method);
-            JSONObject result;
-            if (method == "POST") {
-                result = Post(payload, url);
-            } else if (method == "GET") {
-                result = Get(payload, url);
-            } else if (method == "GET") {
-                result = Get(payload, url);
-            } else if (method == "DELETE") {
-                result = Delete(payload, url);
-            } else if (method == "PUT") {
-                result = Put(payload, url);
-            } else {
-                result = null;
-            }
-            return result;
-
+        Log.e("ApiHelper", "Using HTTp-method: " + method);
+        if (method == "POST") {
+            apiResponse = Post(payload, url);
+        } else if (method == "GET") {
+            apiResponse = Get(payload, url);
+        } else if (method == "GET") {
+            apiResponse = Get(payload, url);
+        } else if (method == "DELETE") {
+            apiResponse = Delete(payload, url);
+        } else if (method == "PUT") {
+            apiResponse = Put(payload, url);
+        } else {
+            apiResponse = null;
         }
+        return apiResponse;
     }
 
 
-    private static JSONObject Post(JSONObject payload, String url) {
-        Log.e("ApiHelper", "post api init");
+    public void setParams(String parMethod, JSONObject parJson, String parUrlPrefix){
+        method = parMethod;
+        payload = parJson;
+        url = parUrlPrefix;
+    }
+
+
+    private static JSONObject Post(JSONObject payload, String urlPrefix) {
+        Log.e("ApiHelper", "POST api init");
         Log.e("ApiHelper", payload.toString());
 
-        URL apiurl;
-        HttpURLConnection connection;
-        try {
-            apiurl = new URL(String.format(apiUrl + url));
-            connection = (HttpURLConnection) apiurl.openConnection();
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.setRequestProperty("Accept", "application/json");
+        final JSONObject json = payload;
+        final String prefix = urlPrefix;
+        Thread thread = new Thread(new Runnable() {
+            //public JSONObject result;
+            @Override
+            public void run() {
+                try {
+                    URL url = new URL(apiUrl+prefix);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("POST");
+                    conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
+                    conn.setRequestProperty("Accept","application/json");
+                    conn.setDoOutput(true);
+                    conn.setDoInput(true);
 
-            for (int i = 0; i < payload.names().length(); i++) {
-                String key = payload.names().getString(i);
-                String value = payload.get(payload.names().getString(i)).toString();
-                connection.setRequestProperty(key, value);
-                Log.e("ApiHelper", "key = " + key);
-                Log.e("ApiHelper", "value = " + value);
+                    DataOutputStream os = new DataOutputStream(conn.getOutputStream());
+                    //os.writeBytes(URLEncoder.encode(jsonParam.toString(), "UTF-8"));
+                    os.writeBytes(json.toString());
 
-            }/*
+                    os.flush();
+                    os.close();
 
-            // Send POST output.
-            printout = new DataOutputStream(urlConn.getOutputStream ());
-            printout.writeBytes(URLEncoder.encode(jsonParam.toString(),"UTF-8"));
-            printout.flush ();
-            printout.close ();
-
-
-                final Handler handOfDoom = new Handler();
-                final Runnable runnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.e("ApiHelper", "Runnable is fired!");
-                        ApiHelper.AsyncApi asyncapi  = new ApiHelper.AsyncApi(new ApiHelper.APIResponse() {
-
-                            @Override
-                            public void processFinish(JSONObject output) {
-                                Log.e("ApiHelper", "process finished");
-                                result = output;
-                                Log.e("ApiHelper", result.toString());
-                            }
-                        });
-
-                        payload = new JSONObject();
-                        result = null;
-                        try {
-                            payload.put("username", username.getText().toString());
-                            payload.put("password", password.getText().toString());
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            Log.e("ApiHelper", e.toString());
-                        }
-                        Log.e("ApiHelper", payload.toString());
-                        Object[] params = new Object[3];
-                        params[0] = "POST";
-                        params[1] = payload;
-                        params[2] = "users/createuser";
-                        asyncapi.execute(params);
-
-                        handOfDoom.postDelayed(this, 10000);
-                    }
-                };
-                handOfDoom.post(runnable);
-                */
-
-
-            BufferedReader responseReader = new BufferedReader(
-                    new InputStreamReader(connection.getInputStream()));
-
-            StringBuffer jsonReader = new StringBuffer(1024);
-            String line = "";
-            while ((line = responseReader.readLine()) != null) {
-                jsonReader.append(line).append("\n");
-            }
-            responseReader.close();
-            JSONObject result = new JSONObject(jsonReader.toString());
-
-            if (result.getInt("cod") != 200) {
-                return result = new JSONObject("Error:404 not found");
-            } else {
-                return result;
+                    Log.e("ApiHelper", String.valueOf(conn.getResponseCode()));
+                    Log.e("ApiHelper" , conn.getResponseMessage());
+                    final JSONObject result = new JSONObject(conn.getResponseMessage().toString());
+                } catch (Exception e) {
+                    Log.e("ApiHelper", "Error in POST");
+                    Log.e("ApiHelper", e.toString());
+                    e.printStackTrace();
+                }
             }
 
-        } catch (Exception e) {
-            Log.e("ApiHelper", "error in Post");
-            Log.e("ApiHelper", e.toString());
-            return null;
-        }
+        });
+        thread.start();
+
     }
 
-
     private static JSONObject Get(JSONObject payload, String url) {
+
+        Log.e("ApiHelper", "GET api init");
+        Log.e("ApiHelper", payload.toString());
         return new JSONObject();
     }
 
     private static JSONObject Delete(JSONObject payload, String url) {
+
+        Log.e("ApiHelper", "DELETE api init");
+        Log.e("ApiHelper", payload.toString());
         return new JSONObject();
     }
 
     private static JSONObject Put(JSONObject payload, String url) {
+
+        Log.e("ApiHelper", "PUT api init");
+        Log.e("ApiHelper", payload.toString());
         return new JSONObject();
     }
 

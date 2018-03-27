@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,6 +21,7 @@ import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
 
+    private ProgressBar spinner;
     public TextView username;
     public TextView password;
     public Button loginBtn;
@@ -37,7 +39,10 @@ public class LoginActivity extends AppCompatActivity {
         password = (TextView) findViewById(R.id.PasswordField);
         loginBtn = (Button) findViewById(R.id.LoginButton);
         registerBtn = (Button) findViewById(R.id.RegisterButton);
+        spinner = (ProgressBar)findViewById(R.id.progressBar1);
+        spinner.setVisibility(View.GONE);
         apihelper = new ApiHelper();
+
         registerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -75,8 +80,25 @@ public class LoginActivity extends AppCompatActivity {
     private boolean CheckValidRegister() {
         if(username.getText().length()>= 1) {
             if (password.getText().length() >= 1) {
-                Log.e("ApiHelper", "post init");
-                response = PostJSON();
+                Log.e("ApiHelper", "check registering...");
+                Log.e("ApiHelper", "Spinner on");
+                spinner.setVisibility(View.VISIBLE);
+
+                //call API
+                JSONObject jsonParam = new JSONObject();
+                try {
+                    jsonParam.put("username",username.getText());
+                    jsonParam.put("password",password.getText());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Log.e("ApiHelper", e.toString());
+                }
+
+                apihelper.setParams("POST", jsonParam, "users/createuser");
+                response = apihelper.apiResponse;
+
+                spinner.setVisibility(View.GONE);
+                Log.e("ApiHelper", "spinner off");
                 if (response != null) {
                     return true;
                 }
@@ -86,49 +108,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private JSONObject PostJSON() {
-        Thread thread = new Thread(new Runnable() {
-            public JSONObject result;
-            @Override
-            public void run() {
-                try {
-                    URL url = new URL(baseApiUrl+"users/createuser");
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestMethod("POST");
-                    conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
-                    conn.setRequestProperty("Accept","application/json");
-                    conn.setDoOutput(true);
-                    conn.setDoInput(true);
-
-                    JSONObject jsonParam = new JSONObject();
-                    jsonParam.put("username",username.getText());
-                    jsonParam.put("password",password.getText());
-
-                    Log.e("ApiHelper", jsonParam.toString());
-                    DataOutputStream os = new DataOutputStream(conn.getOutputStream());
-                    //os.writeBytes(URLEncoder.encode(jsonParam.toString(), "UTF-8"));
-                    os.writeBytes(jsonParam.toString());
-
-                    os.flush();
-                    os.close();
-
-                    Log.e("ApiHelper", String.valueOf(conn.getResponseCode()));
-                    Log.e("ApiHelper" , conn.getResponseMessage());
-                    result = new JSONObject(conn.getResponseMessage());
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
 
 
-            public JSONObject getResult(){
-                return result;
-            }
-
-
-        });
-
-        thread.start();
         return null;
 
     }
