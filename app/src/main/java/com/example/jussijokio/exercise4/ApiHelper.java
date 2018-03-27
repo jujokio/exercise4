@@ -25,11 +25,13 @@ public class ApiHelper {
         public APIResponse apiResponse;
 
         public AsyncApi(APIResponse response){
+            Log.e("ApiHelper", "async init");
             apiResponse = response;
         }
 
         @Override
         protected Object doInBackground(Object[] objects) {
+            Log.e("ApiHelper", "do in background init");
             String method = (String) objects[0];
             JSONObject payload = (JSONObject) objects[1];
             String url = (String) objects[2];
@@ -64,6 +66,8 @@ public class ApiHelper {
             apiurl = new URL(String.format(apiUrl + url));
             connection = (HttpURLConnection) apiurl.openConnection();
             connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Accept", "application/json");
 
             for (int i = 0; i < payload.names().length(); i++) {
                 String key = payload.names().getString(i);
@@ -72,7 +76,52 @@ public class ApiHelper {
                 Log.e("ApiHelper", "key = " + key);
                 Log.e("ApiHelper", "value = " + value);
 
-            }
+            }/*
+
+            // Send POST output.
+            printout = new DataOutputStream(urlConn.getOutputStream ());
+            printout.writeBytes(URLEncoder.encode(jsonParam.toString(),"UTF-8"));
+            printout.flush ();
+            printout.close ();
+
+
+                final Handler handOfDoom = new Handler();
+                final Runnable runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.e("ApiHelper", "Runnable is fired!");
+                        ApiHelper.AsyncApi asyncapi  = new ApiHelper.AsyncApi(new ApiHelper.APIResponse() {
+
+                            @Override
+                            public void processFinish(JSONObject output) {
+                                Log.e("ApiHelper", "process finished");
+                                result = output;
+                                Log.e("ApiHelper", result.toString());
+                            }
+                        });
+
+                        payload = new JSONObject();
+                        result = null;
+                        try {
+                            payload.put("username", username.getText().toString());
+                            payload.put("password", password.getText().toString());
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Log.e("ApiHelper", e.toString());
+                        }
+                        Log.e("ApiHelper", payload.toString());
+                        Object[] params = new Object[3];
+                        params[0] = "POST";
+                        params[1] = payload;
+                        params[2] = "users/createuser";
+                        asyncapi.execute(params);
+
+                        handOfDoom.postDelayed(this, 10000);
+                    }
+                };
+                handOfDoom.post(runnable);
+                */
+
 
             BufferedReader responseReader = new BufferedReader(
                     new InputStreamReader(connection.getInputStream()));

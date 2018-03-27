@@ -13,6 +13,9 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.DataOutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
@@ -23,7 +26,8 @@ public class LoginActivity extends AppCompatActivity {
     public Button registerBtn;
     public ApiHelper apihelper;
     public JSONObject payload;
-    public JSONObject result;
+    public JSONObject response;
+    static final String baseApiUrl = "https://hangouts-mobisocial-18.herokuapp.com/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,8 +44,7 @@ public class LoginActivity extends AppCompatActivity {
                 if(CheckValidRegister()) {
                     Toast.makeText(getBaseContext(),"GO TO REGISTER",
                             Toast.LENGTH_SHORT).show();
-                    Intent gotoMain = new Intent(getApplicationContext(), MainActivity.class);
-                    startActivity(gotoMain);
+                    GoToMain();
                 }
             }
         });
@@ -73,64 +76,75 @@ public class LoginActivity extends AppCompatActivity {
         if(username.getText().length()>= 1) {
             if (password.getText().length() >= 1) {
                 Log.e("ApiHelper", "post init");
-                payload = new JSONObject();
-                result = null;
-                try {
-                    payload.put("username", username.getText().toString());
-                    payload.put("password", password.getText().toString());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    Log.e("ApiHelper", e.toString());
-                    return false;
+                response = PostJSON();
+                if (response != null) {
+                    return true;
                 }
-                Log.e("ApiHelper", payload.toString());
-                Object[] params = new Object[3];
-                params[0] = "POST";
-                params[1] = payload;
-                params[2] = "users/createuser";
-
-
-                final Handler handOfDoom = new Handler();
-                Runnable runnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.e("ApiHelper", "Runnable is fired!");
-                        ApiHelper.AsyncApi asyncapi  = new ApiHelper.AsyncApi(new ApiHelper.APIResponse() {
-
-                            @Override
-                            public void processFinish(JSONObject output) {
-                                result = output;
-                                Log.e("ApiHelper", result.toString());
-                            }
-                        });
-                        asyncapi.execute("65.060543","25.466227");
-                        handOfDoom.postDelayed(this, 10000);
-                    }
-                };
-                handOfDoom.post(runnable);
             }
-        }
-        if (result != null){
-            return true;
         }
         return false;
     }
 
+    private JSONObject PostJSON() {
+        Thread thread = new Thread(new Runnable() {
+            public JSONObject result;
+            @Override
+            public void run() {
+                try {
+                    URL url = new URL(baseApiUrl+"users/createuser");
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("POST");
+                    conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
+                    conn.setRequestProperty("Accept","application/json");
+                    conn.setDoOutput(true);
+                    conn.setDoInput(true);
 
-    private boolean CheckValidLogin(){
+                    JSONObject jsonParam = new JSONObject();
+                    jsonParam.put("username",username.getText());
+                    jsonParam.put("password",password.getText());
 
-        if(username.getText().length()>= 1){
-            if(password.getText().length()>= 1){
+                    Log.e("ApiHelper", jsonParam.toString());
+                    DataOutputStream os = new DataOutputStream(conn.getOutputStream());
+                    //os.writeBytes(URLEncoder.encode(jsonParam.toString(), "UTF-8"));
+                    os.writeBytes(jsonParam.toString());
+
+                    os.flush();
+                    os.close();
+
+                    Log.e("ApiHelper", String.valueOf(conn.getResponseCode()));
+                    Log.e("ApiHelper" , conn.getResponseMessage());
+                    result = new JSONObject(conn.getResponseMessage());
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
 
 
+            public JSONObject getResult(){
+                return result;
+            }
 
-                Toast.makeText(getBaseContext(),"Login ok!!!",
+
+        });
+
+        thread.start();
+        return null;
+
+    }
+
+
+    public boolean CheckValidLogin() {
+        if (username.getText().length() >= 1) {
+            if (password.getText().length() >= 1) {
+                Toast.makeText(getBaseContext(), "Login ok!!!",
                         Toast.LENGTH_LONG).show();
                 return true;
             }
         }
         return false;
     }
+
     private void GoToMain(){
         Intent gotoMain = new Intent(this, MainActivity.class);
         startActivity(gotoMain);
