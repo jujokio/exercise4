@@ -19,16 +19,17 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity implements AsyncResponse {
 
     private ProgressBar spinner;
     public TextView username;
     public TextView password;
     public Button loginBtn;
     public Button registerBtn;
-    public ApiHelper apihelper;
+    public CallAPI apihelper;
     public JSONObject payload;
     public JSONObject response;
+    private TextView mInfoText;
     static final String baseApiUrl = "https://hangouts-mobisocial-18.herokuapp.com/";
 
     @Override
@@ -41,7 +42,9 @@ public class LoginActivity extends AppCompatActivity {
         registerBtn = (Button) findViewById(R.id.RegisterButton);
         spinner = (ProgressBar)findViewById(R.id.progressBar1);
         spinner.setVisibility(View.GONE);
-        apihelper = new ApiHelper();
+        mInfoText = findViewById(R.id.tv_Login_info);
+
+        apihelper = new CallAPI();
 
         registerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -74,6 +77,10 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        CallAPI asyncTask = new CallAPI();
+        asyncTask.delegate = this;
+        asyncTask.execute("users/createuser");
+
 
     }
 
@@ -94,9 +101,10 @@ public class LoginActivity extends AppCompatActivity {
                     Log.e("ApiHelper", e.toString());
                 }
 
-                apihelper.setParams("POST", jsonParam, "users/createuser");
-                response = apihelper.apiResponse;
+                apihelper.setPayload(jsonParam);
 
+                apihelper.delegate = this;
+                apihelper.execute("users/createuser");
                 spinner.setVisibility(View.GONE);
                 Log.e("ApiHelper", "spinner off");
                 if (response != null) {
@@ -129,5 +137,10 @@ public class LoginActivity extends AppCompatActivity {
     private void GoToMain(){
         Intent gotoMain = new Intent(this, MainActivity.class);
         startActivity(gotoMain);
+    }
+
+    @Override
+    public void processFinish(String output) {
+        mInfoText.setText(output);
     }
 }

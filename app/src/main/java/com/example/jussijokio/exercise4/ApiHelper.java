@@ -1,6 +1,9 @@
 package com.example.jussijokio.exercise4;
 
+import android.annotation.SuppressLint;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 import org.json.JSONObject;
@@ -63,6 +66,12 @@ public class ApiHelper implements Callable<JSONObject> {
 
         final JSONObject json = payload;
         final String prefix = urlPrefix;
+        @SuppressLint("HandlerLeak") Handler responseHandler = new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+            }
+        };
         Thread thread = new Thread(new Runnable() {
             //public JSONObject result;
             @Override
@@ -95,7 +104,7 @@ public class ApiHelper implements Callable<JSONObject> {
 
         });
         thread.start();
-
+        return json;
     }
 
     private static JSONObject Get(JSONObject payload, String url) {
