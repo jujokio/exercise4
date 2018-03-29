@@ -26,7 +26,6 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
     public TextView password;
     public Button loginBtn;
     public Button registerBtn;
-    public CallAPI apihelper;
     public JSONObject payload;
     public JSONObject response;
     private TextView mInfoText;
@@ -43,8 +42,6 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
         spinner = (ProgressBar)findViewById(R.id.progressBar1);
         spinner.setVisibility(View.GONE);
         mInfoText = findViewById(R.id.tv_Login_info);
-
-        apihelper = new CallAPI();
 
         registerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -85,6 +82,7 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
     }
 
     private boolean CheckValidRegister() {
+        CallAPI apihelper = new CallAPI();
         if(username.getText().length()>= 1) {
             if (password.getText().length() >= 1) {
                 Log.e("ApiHelper", "check registering...");
@@ -101,7 +99,7 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
                     Log.e("ApiHelper", e.toString());
                 }
 
-                apihelper.setPayload(jsonParam);
+                apihelper.setPayload(jsonParam, "POST");
 
                 apihelper.delegate = this;
                 apihelper.execute("users/createuser");
@@ -124,13 +122,22 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
 
 
     public boolean CheckValidLogin() {
-        if (username.getText().length() >= 1) {
-            if (password.getText().length() >= 1) {
-                Toast.makeText(getBaseContext(), "Login ok!!!",
-                        Toast.LENGTH_LONG).show();
-                return true;
-            }
+        CallAPI apihelper = new CallAPI();
+        //call API
+        Log.d("API", "login call started");
+        JSONObject jsonParam = new JSONObject();
+        try {
+            jsonParam.put("username",username.getText());
+            jsonParam.put("password",password.getText());
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Log.e("ApiHelper", e.toString());
         }
+
+        apihelper.setPayload(jsonParam, "GET");
+
+        apihelper.delegate = this;
+        apihelper.execute("users/login?username="+username.getText()+"&password="+password.getText());
         return false;
     }
 
@@ -141,6 +148,37 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
 
     @Override
     public void processFinish(String output) {
-        mInfoText.setText(output);
+        JSONObject obj = null;
+        //response ID:t ja esimerkki responset
+        // 1 - Create user - {"responseid":1,"status":"success","id":41,"username":"testi","msg":"Successfully created new account. Welcome testi"}
+        // 2 - Login - {"responseid":2,"status":"success","id":34,"username":"testi","msg":"Successfully logged in."}
+        // 3 - Location update - {"responseid":3,"status":"success","nearbyUsers":["Testikakkone"],"msg":"Location updated."}
+        try {
+            obj = new JSONObject(output);
+            Log.d("responsejson",obj.toString());
+            Log.d("responseid", String.valueOf(obj.getInt("responseid")));
+            mInfoText.setText(obj.getString("msg"));
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            switch(obj != null ? obj.getInt("responseid") : 0){
+                case 1:
+                    Log.d("handleresponse","user creation response");
+                    break;
+                case 2:
+                    //Do this and this
+                    break;
+                case 3:
+                    //Do this and this:
+                    break;
+                default: //For all other cases, do this
+                    break;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 }
