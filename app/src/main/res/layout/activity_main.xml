@@ -74,6 +74,12 @@
             android:layout_weight="1"
             android:text="Save message"
             android:textSize="20dp" />
+        <Button
+            android:id="@+id/intent_switcher"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="intent switcher"/>
+
     </LinearLayout>
 
 

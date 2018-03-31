@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">exercise4</string>
+    <string name="Friend_List">Friend List</string>
+    <string name="Username">Username</string>
 </resources>

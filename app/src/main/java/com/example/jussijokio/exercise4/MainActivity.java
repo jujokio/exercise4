@@ -31,11 +31,14 @@ public class MainActivity extends AppCompatActivity {
     public TextView saveMessageField;
     public TextView receiveMessageField;
     public Button saveMessageButton;
+    public Button intent_switcher;
     private SharedPreferences preferences;
     private String message;
     public Location last;
 
+
     //eetu liittyi dev tiimiin
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,7 +95,18 @@ public class MainActivity extends AppCompatActivity {
             }
         });
        displayLastLocation(last);
+        //intent switcher button for friend list
+       intent_switcher = (Button) findViewById(R.id.intent_switcher);
+       intent_switcher.setOnClickListener(new View.OnClickListener(){
+
+           @Override
+           public void onClick(View v) {
+               Intent listactivity_intent = new Intent(getApplicationContext(),ListActivity.class);
+               startActivity(listactivity_intent);
+           }
+       });
     }
+
 
     private boolean CheckForMessages(Location last) {
         //search keys from preferences.
