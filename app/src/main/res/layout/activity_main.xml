@@ -39,7 +39,6 @@
             android:padding="15dp"
             android:focusable="false"
             android:background="@android:color/transparent"
-            android:backgroundTint="@color/colorAccent"
             android:hint="Received this location-bound message."
             android:text=""
             android:textSize="20dp" />
@@ -61,8 +60,7 @@
             android:layout_height="33dp"
             android:layout_weight="1"
             android:padding="15dp"
-            android:background="@android:color/transparent"
-            android:backgroundTint="@android:color/holo_green_light"
+            android:background="@color/colorPrimaryLight"
             android:hint="Insert your location-bound message."
             android:text=""
             android:textSize="20dp" />
