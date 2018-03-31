@@ -13,6 +13,7 @@ import android.location.LocationManager;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.preference.PreferenceManager;
+import android.sax.StartElementListener;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -26,6 +27,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.text.DecimalFormat;
+import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity implements AsyncResponse {
@@ -35,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
     private SharedPreferences preferences;
     private String message;
     public Location last;
+    public Button intentswitcher;
 
     //eetu liittyi dev tiimiin
 
@@ -51,6 +54,16 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         saveMessageField = (TextView) findViewById(R.id.SaveMessageField);
         receiveMessageField = (TextView) findViewById(R.id.ReceiveMessageField);
         saveMessageButton = (Button) findViewById(R.id.SaveMessage);
+        intentswitcher = (Button) findViewById(R.id.intent_switcher);
+
+        intentswitcher.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intentswitcher = new Intent(MainActivity.this,ListActivity.class);
+                startActivity(intentswitcher);
+            }
+        });
+
         saveMessageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
