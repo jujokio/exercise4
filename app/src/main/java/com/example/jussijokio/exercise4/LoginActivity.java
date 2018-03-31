@@ -18,6 +18,7 @@ import java.io.DataOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
+import java.util.Objects;
 
 public class LoginActivity extends AppCompatActivity implements AsyncResponse {
 
@@ -170,6 +171,9 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
                     break;
                 case 2:
                     //Do this and this
+                    if (Objects.equals(obj != null ? obj.getString("status") : null, "success")){
+                        GoToMain();
+                    }
                     break;
                 case 3:
                     //Do this and this:
