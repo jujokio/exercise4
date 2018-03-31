@@ -35,7 +35,7 @@ public class ListActivity extends AppCompatActivity {
         }
         String[] from = {"name", "image"};//string array
         int[] to = {R.id.view_username, R.id.imageView};//int array of views id's
-        SimpleAdapter simpleAdapter = new SimpleAdapter(this, arrayList, R.layout.customlayout, from, to);//Create object and set the parameters for simpleAdapter
+        SimpleAdapter simpleAdapter = new SimpleAdapter(this, arrayList, R.layout.custom_layout, from, to);//Create object and set the parameters for simpleAdapter
         simpleListView.setAdapter(simpleAdapter);//sets the adapter for listView
     }
 }
