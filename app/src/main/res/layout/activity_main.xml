@@ -34,7 +34,7 @@
         <EditText
             android:id="@+id/ReceiveMessageField"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="20dp"
             android:layout_weight="1"
             android:padding="15dp"
             android:focusable="false"
@@ -57,7 +57,7 @@
         <EditText
             android:id="@+id/SaveMessageField"
             android:layout_width="match_parent"
-            android:layout_height="33dp"
+            android:layout_height="20dp"
             android:layout_weight="1"
             android:padding="15dp"
             android:background="@color/colorPrimaryLight"
@@ -67,16 +67,16 @@
 
         <Button
             android:id="@+id/SaveMessage"
-            android:layout_width="wrap_content"
-            android:layout_height="12dp"
-            android:layout_weight="1"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
             android:text="Save message"
-            android:textSize="20dp" />
+            android:textSize="15dp" />
         <Button
             android:id="@+id/intent_switcher"
-            android:layout_width="wrap_content"
+            android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:hint="intent switcher"/>
+            android:text="Nearby friends"
+            android:textSize="15dp" />
 
     </LinearLayout>
 

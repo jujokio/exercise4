@@ -44,7 +44,7 @@ public class CallAPI extends AsyncTask<String, String, String> {
     protected void onPostExecute(String result) {
         // this is executed on the main thread after the process is over
         // update your UI here
-        Log.d("Result", result);
+        Log.e("ApiHelper Result", result);
         delegate.processFinish(result);
     }
 
@@ -77,7 +77,7 @@ public class CallAPI extends AsyncTask<String, String, String> {
                 content += line + "\n";
             }
 
-            Log.d("Content", content);
+            Log.e("ApiHelper Content", content);
             return content;
 
 
@@ -88,7 +88,7 @@ public class CallAPI extends AsyncTask<String, String, String> {
 
         }
 
-        return "heloo";
+        return "heloo"; //heloo
     }
 
     public void setPayload(JSONObject parJson, String method){

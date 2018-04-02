@@ -47,10 +47,10 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
         registerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(CheckValidRegister()) {
-                    Toast.makeText(getBaseContext(),"GO TO REGISTER",
-                            Toast.LENGTH_SHORT).show();
-                    GoToMain();
+                if(username.getText().length()>= 1) {
+                    if (password.getText().length() >= 1) {
+                        CheckValidRegister();
+                    }
                 }
             }
         });
@@ -62,9 +62,8 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
             public void onClick(View view) {
                 if(username.getText().length()>= 1){
                     if(password.getText().length()>= 1){
-                        if(CheckValidLogin()){
-                            GoToMain();
-                        }
+                        CheckValidLogin();
+                            //GoToMain();
                     }
                     else{
                         Toast.makeText(getBaseContext(),"Give password please!",
@@ -108,26 +107,17 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
                 apihelper.execute("users/createuser");
                 spinner.setVisibility(View.GONE);
                 Log.e("ApiHelper", "spinner off");
-                if (response != null) {
-                    return true;
-                }
             }
         }
         return false;
     }
 
-    private JSONObject PostJSON() {
-
-
-        return null;
-
-    }
-
 
     public boolean CheckValidLogin() {
+        spinner.setVisibility(View.VISIBLE);
         CallAPI apihelper = new CallAPI();
         //call API
-        Log.d("API", "login call started");
+        Log.e("ApiHelper ", "login call started");
         JSONObject jsonParam = new JSONObject();
         try {
             jsonParam.put("username",username.getText());
@@ -141,6 +131,10 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
 
         apihelper.delegate = this;
         apihelper.execute("users/login?username="+username.getText()+"&password="+password.getText());
+        spinner.setVisibility(View.GONE);
+        if (apihelper.delegate != null){
+            return true;
+        }
         return false;
     }
 
@@ -158,18 +152,26 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
         // 3 - Location update - {"responseid":3,"status":"success","nearbyUsers":["Testikakkone"],"msg":"Location updated."}
         try {
             obj = new JSONObject(output);
-            Log.d("responsejson",obj.toString());
-            Log.d("responseid", String.valueOf(obj.getInt("responseid")));
-            mInfoText.setText(obj.getString("msg"));
+            Log.e("ApiHelper responsejson",obj.toString());
+            Log.e("ApiHelper responseid", String.valueOf(obj.getInt("responseid")));
+            Toast.makeText(this, obj.getString("msg"), Toast.LENGTH_SHORT).show();
+            //mInfoText.setText(obj.getString("msg"));
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
         try {
+
+            if(obj != null) {
+                if(obj.getString("status").toLowerCase().equals("failed")){
+                    Toast.makeText(this, obj.getString("msg"), Toast.LENGTH_SHORT).show();
+                }
+            }
+
             switch(obj != null ? obj.getInt("responseid") : 0){
                 case 1:
-                    Log.d("handleresponse","user creation response");
+                    Log.e("ApiHelperhandleresponse","user creation response");
                     break;
                 case 2:
                     //Do this and this
@@ -185,6 +187,7 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
             }
         } catch (JSONException e) {
             e.printStackTrace();
+            Toast.makeText(this, "An error occured!"+e.toString(), Toast.LENGTH_SHORT).show();
         }
     }
 }

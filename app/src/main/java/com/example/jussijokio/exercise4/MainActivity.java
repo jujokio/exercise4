@@ -181,8 +181,8 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
 
 
     public boolean CheckLoginActive() {
-
-        return false;
+        Toast.makeText(this, "Welcome!", Toast.LENGTH_SHORT).show();
+        return true;
     }
 
 
