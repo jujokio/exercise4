@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -26,8 +27,12 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.text.DecimalFormat;
 import java.util.List;
+import java.util.Objects;
 
 
 public class MainActivity extends AppCompatActivity implements AsyncResponse {
@@ -38,6 +43,8 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
     private String message;
     public Location last;
     public Button intentswitcher;
+    public CallAPI apihelper;
+    int s;
 
     //eetu liittyi dev tiimiin
 
@@ -45,9 +52,15 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        JSONObject jsonParam = new JSONObject();
+        apihelper = new CallAPI();
+        apihelper.setPayload(jsonParam, "GET");
+        s = ((UserData) this.getApplication()).getmUserID();
+        apihelper.delegate = this;
         if (!CheckLoginActive()) {
             Intent gotoLogin = new Intent(this, LoginActivity.class);
             startActivity(gotoLogin);
+//            finish();
         }
         // this is coding
         //init ui elements
@@ -59,8 +72,10 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         intentswitcher.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intentswitcher = new Intent(MainActivity.this,ListActivity.class);
-                startActivity(intentswitcher);
+//                Intent intentswitcher = new Intent(MainActivity.this,ListActivity.class);
+//                startActivity(intentswitcher);
+//                Location update request: method: GET, endpoint: "location/update" urlParams: "id, lat, lon"
+                apihelper.execute(String.format("location/update?id=%s&lat=%s&lon=%s", s, last.getLatitude(), last.getLongitude()));
             }
         });
 
@@ -87,11 +102,13 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
                     this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 123);
         }
         //time in ms, distance in m
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 60 * 5, 0, new LocationListener() {
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 10, 0, new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
+
                 // code here plz.
                 last = location;
+                Log.d("latitude", String.valueOf(location.getLatitude()));
                 displayLastLocation(last);
                 CheckForMessages(last);
             }
@@ -111,9 +128,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
                         Toast.LENGTH_SHORT).show();
             }
         });
-        CallAPI asyncTask = new CallAPI();
-//        asyncTask.delegate = this;
-//        asyncTask.execute("users/createuser");
         displayLastLocation(last);
     }
 
@@ -185,10 +199,59 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         return true;
     }
 
+    public Context getContext(){
+        return this;
+    }
 
     @Override
     public void processFinish(String output) {
-        Log.d("main conten", output);
-        Toast.makeText(this, output, Toast.LENGTH_SHORT).show();
+        JSONObject obj = null;
+        //response ID:t ja esimerkki responset
+        // 1 - Create user - {"responseid":1,"status":"success","id":41,"username":"testi","msg":"Successfully created new account. Welcome testi"}
+        // 2 - Login - {"responseid":2,"status":"success","id":34,"username":"testi","msg":"Successfully logged in."}
+        // 3 - Location update - {"responseid":3,"status":"success","nearbyUsers":["Testikakkone"],"msg":"Location updated."}
+        try {
+            obj = new JSONObject(output);
+            Log.e("ApiHelper responsejson",obj.toString());
+            Log.e("ApiHelper responseid", String.valueOf(obj.getInt("responseid")));
+            Toast.makeText(this, obj.getString("msg"), Toast.LENGTH_SHORT).show();
+            //mInfoText.setText(obj.getString("msg"));
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        try {
+
+            if(obj != null) {
+                if(obj.getString("status").toLowerCase().equals("failed")){
+                    Toast.makeText(this, obj.getString("msg"), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            switch(obj != null ? obj.getInt("responseid") : 0){
+                case 1:
+                    Log.e("ApiHelperhandleresponse","user creation response");
+                    break;
+                case 2:
+                    //Do this and this
+                    if (Objects.equals(obj != null ? obj.getString("status") : null, "success")){
+                        ((UserData) this.getApplication()).setmUserID(obj.getInt("id"));
+                    }
+                    break;
+                case 3:
+                    Log.e("resp", String.valueOf(obj.getJSONArray("nearbyUsers")));
+
+                    Intent intentswitcher = new Intent(MainActivity.this,ListActivity.class);
+                    intentswitcher.putExtra("nearbyUsers", obj.getJSONArray("nearbyUsers").toString());
+                    startActivity(intentswitcher);
+                    break;
+                default: //For all other cases, do this
+                    break;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "An error occured!"+e.toString(), Toast.LENGTH_SHORT).show();
+        }
     }
 }

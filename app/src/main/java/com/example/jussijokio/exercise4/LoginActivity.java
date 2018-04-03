@@ -1,6 +1,7 @@
 package com.example.jussijokio.exercise4;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -38,6 +39,8 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
         setContentView(R.layout.activity_login);
         username = (TextView) findViewById(R.id.UsernameField);
         password = (TextView) findViewById(R.id.PasswordField);
+        username.setText("testi");
+        password.setText("testi");
         loginBtn = (Button) findViewById(R.id.LoginButton);
         registerBtn = (Button) findViewById(R.id.RegisterButton);
         spinner = (ProgressBar)findViewById(R.id.progressBar1);
@@ -176,6 +179,7 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
                 case 2:
                     //Do this and this
                     if (Objects.equals(obj != null ? obj.getString("status") : null, "success")){
+                        ((UserData) this.getApplication()).setmUserID(obj.getInt("id"));
                         GoToMain();
                     }
                     break;
