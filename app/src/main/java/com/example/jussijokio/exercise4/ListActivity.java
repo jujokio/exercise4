@@ -41,14 +41,14 @@ public class ListActivity extends AppCompatActivity {
         simpleListView = (ListView) findViewById(R.id.list_item);
 
         ArrayList<HashMap<String, String>> arrayList = new ArrayList<>();
-        for (int i = 0; i < username.length; i++) {
+        for (String anUsername : username) {
             HashMap<String, String> hashMap = new HashMap<>();//create a hashmap to store the data in key value pair
-            hashMap.put("name", username[i]);
-            hashMap.put("image", Images[0] +"");
+            hashMap.put("name", anUsername);
+            hashMap.put("image", Images[0] + "");
             arrayList.add(hashMap);//add the hashmap into arrayList
         }
-        String[] from = {"name", "image"};//string array
-        int[] to = {R.id.view_username, R.id.imageView};//int array of views id's
+        String[] from = {"name"};//string array
+        int[] to = {R.id.view_username};//int array of views id's
         SimpleAdapter simpleAdapter = new SimpleAdapter(this, arrayList, R.layout.custom_layout, from, to);//Create object and set the parameters for simpleAdapter
         simpleListView.setAdapter(simpleAdapter);//sets the adapter for listView
     }
