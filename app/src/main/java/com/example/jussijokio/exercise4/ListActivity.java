@@ -22,7 +22,7 @@ import java.util.HashMap;
 public class ListActivity extends AppCompatActivity {
 
     ListView simpleListView;
-    int[] Images = {R.drawable.ic_launcher_foreground}; //Hardset Image for every user
+    int[] Images = {R.mipmap.ic_launcher}; //Hardset Image for every user
     String[] username; //List of users close by (harcoded at the moment)
 
     @Override
@@ -47,10 +47,14 @@ public class ListActivity extends AppCompatActivity {
             hashMap.put("image", Images[0] + "");
             arrayList.add(hashMap);//add the hashmap into arrayList
         }
-        String[] from = {"name"};//string array
-        int[] to = {R.id.view_username};//int array of views id's
+        String[] from = {"name", "image"};//string array
+        int[] to = {R.id.view_username, R.id.imageView};//int array of views id's
+        Log.e("listviewbug","begin of adapter");
         SimpleAdapter simpleAdapter = new SimpleAdapter(this, arrayList, R.layout.custom_layout, from, to);//Create object and set the parameters for simpleAdapter
+        Log.e("listviewbug","middle of adapter");
         simpleListView.setAdapter(simpleAdapter);//sets the adapter for listView
+        Log.e("listviewbug","end of adapter");
+        Log.e("listviewbug","end of adapter");
     }
     public static String[] toStringArray(JSONArray array) {
         if(array==null)

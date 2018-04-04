@@ -64,6 +64,8 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         }
         // this is coding
         //init ui elements
+        startService(new Intent(this,LocationService.class));
+
         saveMessageField = (TextView) findViewById(R.id.SaveMessageField);
         receiveMessageField = (TextView) findViewById(R.id.ReceiveMessageField);
         saveMessageButton = (Button) findViewById(R.id.SaveMessage);
@@ -75,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
 //                Intent intentswitcher = new Intent(MainActivity.this,ListActivity.class);
 //                startActivity(intentswitcher);
 //                Location update request: method: GET, endpoint: "location/update" urlParams: "id, lat, lon"
-                apihelper.execute(String.format("location/update?id=%s&lat=%s&lon=%s", s, last.getLatitude(), last.getLongitude()));
+                apihelper.execute(String.format("location/update?id=%s&lat=%s&lon=%s", s, 65.04265639, 25.43124888));
             }
         });
 
@@ -93,42 +95,42 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         //init shared preferences
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         //init location manager
-        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        if (ContextCompat.checkSelfPermission(
-                this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            last = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        } else {
-            ActivityCompat.requestPermissions(
-                    this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 123);
-        }
+//        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+//        if (ContextCompat.checkSelfPermission(
+//                this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+//            last = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+//        } else {
+//            ActivityCompat.requestPermissions(
+//                    this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 123);
+//        }
         //time in ms, distance in m
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 10, 0, new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-
-                // code here plz.
-                last = location;
-                Log.d("latitude", String.valueOf(location.getLatitude()));
-                displayLastLocation(last);
-                CheckForMessages(last);
-            }
-
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-                CheckForMessages(last);
-            }
-
-            @Override
-            public void onProviderEnabled(String provider) {
-            }
-
-            @Override
-            public void onProviderDisabled(String provider) {
-                Toast.makeText(getBaseContext(), "Enable GPS please!",
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
-        displayLastLocation(last);
+//        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 10, 0, new LocationListener() {
+//            @Override
+//            public void onLocationChanged(Location location) {
+//
+//                // code here plz.
+//                last = location;
+//                Log.d("latitude", String.valueOf(location.getLatitude()));
+//                displayLastLocation(last);
+//                CheckForMessages(last);
+//            }
+//
+//            @Override
+//            public void onStatusChanged(String provider, int status, Bundle extras) {
+//                CheckForMessages(last);
+//            }
+//
+//            @Override
+//            public void onProviderEnabled(String provider) {
+//            }
+//
+//            @Override
+//            public void onProviderDisabled(String provider) {
+//                Toast.makeText(getBaseContext(), "Enable GPS please!",
+//                        Toast.LENGTH_SHORT).show();
+//            }
+//        });
+//        displayLastLocation(last);
     }
 
     private boolean CheckForMessages(Location last) {
