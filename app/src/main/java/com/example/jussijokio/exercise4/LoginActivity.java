@@ -52,6 +52,7 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
             public void onClick(View view) {
                 if(username.getText().length()>= 1) {
                     if (password.getText().length() >= 1) {
+                        spinner.setVisibility(View.VISIBLE);
                         CheckValidRegister();
                     }
                 }
@@ -65,6 +66,7 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
             public void onClick(View view) {
                 if(username.getText().length()>= 1){
                     if(password.getText().length()>= 1){
+                        spinner.setVisibility(View.VISIBLE);
                         CheckValidLogin();
                             //GoToMain();
                     }
@@ -92,8 +94,6 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
             if (password.getText().length() >= 1) {
                 Log.e("ApiHelper", "check registering...");
                 Log.e("ApiHelper", "Spinner on");
-                spinner.setVisibility(View.VISIBLE);
-
                 //call API
                 JSONObject jsonParam = new JSONObject();
                 try {
@@ -108,7 +108,6 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
 
                 apihelper.delegate = this;
                 apihelper.execute("users/createuser");
-                spinner.setVisibility(View.GONE);
                 Log.e("ApiHelper", "spinner off");
             }
         }
@@ -117,7 +116,6 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
 
 
     public boolean CheckValidLogin() {
-        spinner.setVisibility(View.VISIBLE);
         CallAPI apihelper = new CallAPI();
         //call API
         Log.e("ApiHelper ", "login call started");
@@ -134,10 +132,10 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
 
         apihelper.delegate = this;
         apihelper.execute("users/login?username="+username.getText()+"&password="+password.getText());
-        spinner.setVisibility(View.GONE);
         if (apihelper.delegate != null){
             return true;
         }
+        spinner.setVisibility(View.GONE);
         return false;
     }
 
@@ -149,6 +147,7 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
     @Override
     public void processFinish(String output) {
         JSONObject obj = null;
+        spinner.setVisibility(View.GONE);
         //response ID:t ja esimerkki responset
         // 1 - Create user - {"responseid":1,"status":"success","id":41,"username":"testi","msg":"Successfully created new account. Welcome testi"}
         // 2 - Login - {"responseid":2,"status":"success","id":34,"username":"testi","msg":"Successfully logged in."}
