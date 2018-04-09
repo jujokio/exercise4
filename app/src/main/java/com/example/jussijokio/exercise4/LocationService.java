@@ -1,6 +1,7 @@
 package com.example.jussijokio.exercise4;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -11,9 +12,11 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -25,16 +28,22 @@ import java.util.Objects;
 public class LocationService extends Service {
     private static final String TAG = "MyLocationService";
     private LocationManager mLocationManager = null;
-    private static final int LOCATION_INTERVAL = 1000;
+    private static final int LOCATION_INTERVAL = 10000;
     private static final float LOCATION_DISTANCE = 1;
 
     private class LocationListener implements android.location.LocationListener, AsyncResponse {
         Location mLastLocation;
         CallAPI apihelper;
-//        int s = ((UserData) getApplication()).getmUserID();
+
+        //        int s = ((UserData) getApplication()).getmUserID();
         public LocationListener(String provider) {
             Log.e(TAG, "LocationListener " + provider);
             mLastLocation = new Location(provider);
+//            JSONObject jsonParam = new JSONObject();
+//            apihelper = new CallAPI();
+//            apihelper.setPayload(jsonParam, "GET");
+//            apihelper.delegate = this;
+//            apihelper.execute(String.format("location/update?id=%s&lat=%s&lon=%s", 34, 65.04265639, 25.43124888));
         }
 
         @Override
@@ -72,7 +81,7 @@ public class LocationService extends Service {
             // 3 - Location update - {"responseid":3,"status":"success","nearbyUsers":["Testikakkone"],"msg":"Location updated."}
             try {
                 obj = new JSONObject(output);
-                Log.e("ApiHelper responsejson",obj.toString());
+                Log.e("ApiHelper responsejson", obj.toString());
                 Log.e("ApiHelper responseid", String.valueOf(obj.getInt("responseid")));
                 Toast.makeText(getBaseContext(), obj.getString("msg"), Toast.LENGTH_SHORT).show();
                 //mInfoText.setText(obj.getString("msg"));
@@ -83,38 +92,62 @@ public class LocationService extends Service {
 
             try {
 
-                if(obj != null) {
-                    if(obj.getString("status").toLowerCase().equals("failed")){
+                if (obj != null) {
+                    if (obj.getString("status").toLowerCase().equals("failed")) {
                         Toast.makeText(getBaseContext(), obj.getString("msg"), Toast.LENGTH_SHORT).show();
                     }
                 }
 
-                switch(obj != null ? obj.getInt("responseid") : 0){
+                switch (obj != null ? obj.getInt("responseid") : 0) {
                     case 1:
-                        Log.e("ApiHelperhandleresponse","user creation response");
+                        Log.e("ApiHelperhandleresponse", "user creation response");
                         break;
                     case 3:
                         Log.e("resp", String.valueOf(obj.getJSONArray("nearbyUsers")));
 
-                        if (obj.getJSONArray("nearbyUsers").length() > 0){
+                        if (obj.getJSONArray("nearbyUsers").length() > 0) {
                             NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                            // What happens, e.g., what activity is launched, if notification is clicked
-                            Intent intent = new Intent(getBaseContext(), ListActivity.class);
-                            intent.putExtra("nearbyUsers", obj.getJSONArray("nearbyUsers").toString());
-                            // Since this can happen in the future, wrap it in a pending intent
-                            PendingIntent pIntent = PendingIntent.getActivity(getBaseContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-                            // build notification
-                            Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-                            Notification notification = new Notification.Builder(getBaseContext())
-                                    .setContentTitle("You have a new location-bound message!")
-                                    .setContentText(obj.getJSONArray("nearbyUsers").get(0).toString() + " is nearby!")
-                                    .setSound(alarmSound)
-                                    .setSmallIcon(R.drawable.favicon1)
-                                    .setContentIntent(pIntent)
-                                    .setAutoCancel(true) //clear automatically when clicked
-                                    .build();
-                            // send notification to notification tray
-                            notificationManager.notify(123, notification);
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                Log.d(TAG,"Going to oreo notify");
+                                int notifyID = 1;
+                                String CHANNEL_ID = "my_channel_01";// The id of the channel.
+                                CharSequence name = "HangOut";// The user-visible name of the channel.
+                                int importance = NotificationManager.IMPORTANCE_HIGH;
+                                NotificationChannel mChannel = new NotificationChannel(CHANNEL_ID, name, importance);
+                                notificationManager.createNotificationChannel(mChannel);
+                                Intent intent = new Intent(getBaseContext(), ListActivity.class);
+                                intent.putExtra("nearbyUsers", obj.getJSONArray("nearbyUsers").toString());
+                                // Since this can happen in the future, wrap it in a pending intent
+                                PendingIntent pIntent = PendingIntent.getActivity(getBaseContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                Notification notification = new Notification.Builder(getBaseContext(), CHANNEL_ID)
+                                        .setContentTitle("You have a new location-bound message!")
+                                        .setContentText(obj.getJSONArray("nearbyUsers").get(0).toString() + " is nearby!")
+                                        .setSmallIcon(R.drawable.favicon1)
+                                        .setContentIntent(pIntent)
+                                        .setAutoCancel(true)
+                                        .setChannelId(CHANNEL_ID)
+                                        .build();
+                                notificationManager.notify(123, notification);
+                            } else {
+                                Log.d(TAG,"Going to depricated notify");
+                                // What happens, e.g., what activity is launched, if notification is clicked
+                                Intent intent = new Intent(getBaseContext(), ListActivity.class);
+                                intent.putExtra("nearbyUsers", obj.getJSONArray("nearbyUsers").toString());
+                                // Since this can happen in the future, wrap it in a pending intent
+                                PendingIntent pIntent = PendingIntent.getActivity(getBaseContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                // build notification
+                                Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                                Notification notification = new Notification.Builder(getBaseContext())
+                                        .setContentTitle("You have a new location-bound message!")
+                                        .setContentText(obj.getJSONArray("nearbyUsers").get(0).toString() + " is nearby!")
+                                        .setSound(alarmSound)
+                                        .setSmallIcon(R.drawable.favicon1)
+                                        .setContentIntent(pIntent)
+                                        .setAutoCancel(true) //clear automatically when clicked
+                                        .build();
+                                // send notification to notification tray
+                                notificationManager.notify(123, notification);
+                            }
                         }
                         break;
                     default: //For all other cases, do this
@@ -122,7 +155,7 @@ public class LocationService extends Service {
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
-                Toast.makeText(getBaseContext(), "An error occured!"+e.toString(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getBaseContext(), "An error occured!" + e.toString(), Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -200,7 +233,7 @@ public class LocationService extends Service {
     }
 
     private void initializeLocationManager() {
-        Log.e(TAG, "initializeLocationManager - LOCATION_INTERVAL: "+ LOCATION_INTERVAL + " LOCATION_DISTANCE: " + LOCATION_DISTANCE);
+        Log.e(TAG, "initializeLocationManager - LOCATION_INTERVAL: " + LOCATION_INTERVAL + " LOCATION_DISTANCE: " + LOCATION_DISTANCE);
         if (mLocationManager == null) {
             mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         }
