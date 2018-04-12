@@ -35,7 +35,7 @@ public class LocationService extends Service {
         Location mLastLocation;
         CallAPI apihelper;
 
-        //        int s = ((UserData) getApplication()).getmUserID();
+                int s = ((UserData) getApplication()).getmUserID();
         public LocationListener(String provider) {
             Log.e(TAG, "LocationListener " + provider);
             mLastLocation = new Location(provider);

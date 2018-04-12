@@ -1,6 +1,8 @@
 package com.example.jussijokio.exercise4;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -178,7 +180,10 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
                 case 2:
                     //Do this and this
                     if (Objects.equals(obj != null ? obj.getString("status") : null, "success")){
-                        ((UserData) this.getApplication()).setmUserID(obj.getInt("id"));
+                        SharedPreferences sharedPref = this.getSharedPreferences("myPrefs", Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPref.edit();
+                        editor.putInt("id", obj.getInt("id"));
+                        editor.commit();
                         GoToMain();
                     }
                     break;

@@ -15,6 +15,8 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.sax.StartElementListener;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -27,6 +29,11 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -35,7 +42,8 @@ import java.util.List;
 import java.util.Objects;
 
 
-public class MainActivity extends AppCompatActivity implements AsyncResponse {
+public class MainActivity extends AppCompatActivity implements AsyncResponse, GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener {
     public TextView saveMessageField;
     public TextView receiveMessageField;
     public Button saveMessageButton;
@@ -45,6 +53,27 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
     public Button intentswitcher;
     public CallAPI apihelper;
     int s;
+    private GoogleApiClient mGoogleApiClient;
+    private LocationRequest mLocationRequest;
+    private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
+    /**
+     * The desired interval for location updates. Inexact. Updates may be more or less frequent.
+     */
+    // FIXME: 5/16/17
+    private static final long UPDATE_INTERVAL = 10 * 1000;
+
+    /**
+     * The fastest rate for active location updates. Updates will never be more frequent
+     * than this value, but they may be less frequent.
+     */
+    // FIXME: 5/14/17
+    private static final long FASTEST_UPDATE_INTERVAL = UPDATE_INTERVAL / 2;
+
+    /**
+     * The max time before batched results are delivered by location services. Results may be
+     * delivered sooner than this interval.
+     */
+    private static final long MAX_WAIT_TIME = UPDATE_INTERVAL * 3;
 
     //eetu liittyi dev tiimiin
 
@@ -64,7 +93,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         }
         // this is coding
         //init ui elements
-        startService(new Intent(this,LocationService.class));
+//        startService(new Intent(this, LocationService.class));
 
         saveMessageField = (TextView) findViewById(R.id.SaveMessageField);
         receiveMessageField = (TextView) findViewById(R.id.ReceiveMessageField);
@@ -91,46 +120,8 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
                 }
             }
         });
+        buildGoogleApiClient();
 
-        //init shared preferences
-        preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        //init location manager
-//        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-//        if (ContextCompat.checkSelfPermission(
-//                this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-//            last = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-//        } else {
-//            ActivityCompat.requestPermissions(
-//                    this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 123);
-//        }
-        //time in ms, distance in m
-//        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 10, 0, new LocationListener() {
-//            @Override
-//            public void onLocationChanged(Location location) {
-//
-//                // code here plz.
-//                last = location;
-//                Log.d("latitude", String.valueOf(location.getLatitude()));
-//                displayLastLocation(last);
-//                CheckForMessages(last);
-//            }
-//
-//            @Override
-//            public void onStatusChanged(String provider, int status, Bundle extras) {
-//                CheckForMessages(last);
-//            }
-//
-//            @Override
-//            public void onProviderEnabled(String provider) {
-//            }
-//
-//            @Override
-//            public void onProviderDisabled(String provider) {
-//                Toast.makeText(getBaseContext(), "Enable GPS please!",
-//                        Toast.LENGTH_SHORT).show();
-//            }
-//        });
-//        displayLastLocation(last);
     }
 
     private boolean CheckForMessages(Location last) {
@@ -255,5 +246,73 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
             e.printStackTrace();
             Toast.makeText(this, "An error occured!"+e.toString(), Toast.LENGTH_SHORT).show();
         }
+    }
+    private void createLocationRequest() {
+        mLocationRequest = new LocationRequest();
+
+        mLocationRequest.setInterval(UPDATE_INTERVAL);
+
+        // Sets the fastest rate for active location updates. This interval is exact, and your
+        // application will never receive updates faster than this value.
+        mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        // Sets the maximum time when batched location updates are delivered. Updates may be
+        // delivered sooner than this interval.
+        mLocationRequest.setMaxWaitTime(MAX_WAIT_TIME);
+    }
+
+    private void buildGoogleApiClient() {
+        if (mGoogleApiClient != null) {
+            return;
+        }
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .enableAutoManage(this, this)
+                .addApi(LocationServices.API)
+                .build();
+        createLocationRequest();
+    }
+
+    private PendingIntent getPendingIntent() {
+        Intent intent = new Intent(this, LocationUpdatesBroadcastReceiver.class);
+        intent.setAction(LocationUpdatesBroadcastReceiver.ACTION_PROCESS_UPDATES);
+        return PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+    public void requestLocationUpdates() {
+        try {
+            Log.i("Main", "Starting location updates");
+            LocationServices.FusedLocationApi.requestLocationUpdates(
+                    mGoogleApiClient, mLocationRequest, getPendingIntent());
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        }
+    }
+    public void removeLocationUpdates() {
+        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient,
+                getPendingIntent());
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d("Main", "destroying");
+        removeLocationUpdates();
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        Log.i("Main", "GoogleApiClient connected");
+        requestLocationUpdates();
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
     }
 }
