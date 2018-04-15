@@ -28,48 +28,29 @@ import java.util.List;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
 
-/**
- * Receiver for handling location updates.
- *
- * For apps targeting API level O
- * {@link android.app.PendingIntent#getBroadcast(Context, int, Intent, int)} should be used when
- * requesting location updates. Due to limits on background services,
- * {@link android.app.PendingIntent#getService(Context, int, Intent, int)} should not be used.
- *
- *  Note: Apps running on "O" devices (regardless of targetSdkVersion) may receive updates
- *  less frequently than the interval specified in the
- *  {@link com.google.android.gms.location.LocationRequest} when the app is no longer in the
- *  foreground.
- */
 public class LocationUpdatesBroadcastReceiver extends BroadcastReceiver implements AsyncResponse {
     CallAPI apihelper;
     Context baseContext;
     private static final String TAG = "LUBroadcastReceiver";
 
-    static final String ACTION_PROCESS_UPDATES =
-            "com.google.android.gms.location.sample.backgroundlocationupdates.action" +
-                    ".PROCESS_UPDATES";
-
     @Override
     public void onReceive(Context context, Intent intent) {
-        baseContext=context;
-        SharedPreferences sharedPref = context.getSharedPreferences("myPrefs",Context.MODE_PRIVATE);
+        baseContext = context;
+        SharedPreferences sharedPref = context.getSharedPreferences("myPrefs", Context.MODE_PRIVATE);
         int mUserID = sharedPref.getInt("id", 0);
 
         if (intent != null) {
-            final String action = intent.getAction();
-            if (ACTION_PROCESS_UPDATES.equals(action)) {
-                LocationResult result = LocationResult.extractResult(intent);
-                if (result != null) {
-                    List<Location> locations = result.getLocations();
-                    Location lastLoc = locations.get(locations.size() - 1);
-                    Log.d(TAG, String.valueOf(lastLoc.getLatitude()));
-                    apihelper = new CallAPI();
-                    apihelper.setPayload(new JSONObject(), "GET");
-                    apihelper.delegate = this;
-                    apihelper.execute(String.format("location/update?id=%s&lat=%s&lon=%s", mUserID, lastLoc.getLatitude(), lastLoc.getLongitude()));
-                }
+            LocationResult result = LocationResult.extractResult(intent);
+            if (result != null) {
+                List<Location> locations = result.getLocations();
+                Location lastLoc = locations.get(locations.size() - 1);
+                Log.d(TAG, String.valueOf(lastLoc.getLatitude()));
+                apihelper = new CallAPI();
+                apihelper.setPayload(new JSONObject(), "GET");
+                apihelper.delegate = this;
+                apihelper.execute(String.format("location/update?id=%s&lat=%s&lon=%s", mUserID, lastLoc.getLatitude(), lastLoc.getLongitude()));
             }
+
         }
     }
 
@@ -109,7 +90,7 @@ public class LocationUpdatesBroadcastReceiver extends BroadcastReceiver implemen
                     if (obj.getJSONArray("nearbyUsers").length() > 0) {
                         NotificationManager notificationManager = (NotificationManager) baseContext.getSystemService(NOTIFICATION_SERVICE);
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            Log.d(TAG,"Going to oreo notify");
+                            Log.d(TAG, "Going to oreo notify");
                             int notifyID = 1;
                             String CHANNEL_ID = "my_channel_01";// The id of the channel.
                             CharSequence name = "HangOut";// The user-visible name of the channel.
@@ -130,7 +111,7 @@ public class LocationUpdatesBroadcastReceiver extends BroadcastReceiver implemen
                                     .build();
                             notificationManager.notify(123, notification);
                         } else {
-                            Log.d(TAG,"Going to depricated notify");
+                            Log.d(TAG, "Going to depricated notify");
                             // What happens, e.g., what activity is launched, if notification is clicked
                             Intent intent = new Intent(baseContext, ListActivity.class);
                             intent.putExtra("nearbyUsers", obj.getJSONArray("nearbyUsers").toString());

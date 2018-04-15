@@ -55,24 +55,8 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
     int s;
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
-    private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
-    /**
-     * The desired interval for location updates. Inexact. Updates may be more or less frequent.
-     */
-    // FIXME: 5/16/17
     private static final long UPDATE_INTERVAL = 10 * 1000;
-
-    /**
-     * The fastest rate for active location updates. Updates will never be more frequent
-     * than this value, but they may be less frequent.
-     */
-    // FIXME: 5/14/17
     private static final long FASTEST_UPDATE_INTERVAL = UPDATE_INTERVAL / 2;
-
-    /**
-     * The max time before batched results are delivered by location services. Results may be
-     * delivered sooner than this interval.
-     */
     private static final long MAX_WAIT_TIME = UPDATE_INTERVAL * 3;
 
     //eetu liittyi dev tiimiin
@@ -93,7 +77,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
         }
         // this is coding
         //init ui elements
-//        startService(new Intent(this, LocationService.class));
 
         saveMessageField = (TextView) findViewById(R.id.SaveMessageField);
         receiveMessageField = (TextView) findViewById(R.id.ReceiveMessageField);
@@ -113,6 +96,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
         saveMessageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                removeLocationUpdates();
                 if (last != null && saveMessageField.getText().length() >= 1) {
                     SaveMessage(last);
                 } else {
@@ -121,38 +105,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
             }
         });
         buildGoogleApiClient();
-
-    }
-
-    private boolean CheckForMessages(Location last) {
-        //search keys from preferences.
-        String key = getPreferencesKey(last);
-        String receivedMessage = preferences.getString(key, null);
-        if (receivedMessage != null) {
-            NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            // What happens, e.g., what activity is launched, if notification is clicked
-            Intent intent = new Intent(getBaseContext(), MainActivity.class);
-            // Since this can happen in the future, wrap it in a pending intent
-            PendingIntent pIntent = PendingIntent.getActivity(getBaseContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            // build notification
-            Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            Notification notification = new Notification.Builder(getBaseContext())
-                    .setContentTitle("You have a new location-bound message!")
-                    .setContentText(receivedMessage)
-                    .setSound(alarmSound)
-                    .setSmallIcon(R.drawable.favicon1)
-                    .setContentIntent(pIntent)
-                    .setAutoCancel(true) //clear automatically when clicked
-                    .build();
-            // send notification to notification tray
-            notificationManager.notify(123, notification);
-            DisplayMessage(receivedMessage);
-            return true;
-        } else {
-            Log.e("locationMessage", "no messages with key: " + key);
-            receiveMessageField.setText(null);
-            return false;
-        }
 
     }
 
@@ -249,16 +201,8 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
     }
     private void createLocationRequest() {
         mLocationRequest = new LocationRequest();
-
-        mLocationRequest.setInterval(UPDATE_INTERVAL);
-
-        // Sets the fastest rate for active location updates. This interval is exact, and your
-        // application will never receive updates faster than this value.
         mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        // Sets the maximum time when batched location updates are delivered. Updates may be
-        // delivered sooner than this interval.
         mLocationRequest.setMaxWaitTime(MAX_WAIT_TIME);
     }
 
@@ -276,7 +220,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
 
     private PendingIntent getPendingIntent() {
         Intent intent = new Intent(this, LocationUpdatesBroadcastReceiver.class);
-        intent.setAction(LocationUpdatesBroadcastReceiver.ACTION_PROCESS_UPDATES);
         return PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
     public void requestLocationUpdates() {

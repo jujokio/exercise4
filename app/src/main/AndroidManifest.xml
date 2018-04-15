@@ -28,11 +28,7 @@
         <activity android:name=".ListActivity" />
         <receiver android:name=".LocationUpdatesBroadcastReceiver"
             android:exported="true">
-            <intent-filter>
-                <action android:name=".LocationUpdatesBroadcastReceiver.ACTION_PROCESS_UPDATES" />
-            </intent-filter>
         </receiver>
-        <service android:name=".LocationService" />
     </application>
 
 </manifest>
