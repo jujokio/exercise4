@@ -65,6 +65,13 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        if (ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 2);
+            finish();
+            return;
+        }
         JSONObject jsonParam = new JSONObject();
         apihelper = new CallAPI();
         apihelper.setPayload(jsonParam, "GET");
@@ -86,10 +93,11 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
         intentswitcher.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                Intent intentswitcher = new Intent(MainActivity.this,ListActivity.class);
-//                startActivity(intentswitcher);
-//                Location update request: method: GET, endpoint: "location/update" urlParams: "id, lat, lon"
-                apihelper.execute(String.format("location/update?id=%s&lat=%s&lon=%s", s, 65.04265639, 25.43124888));
+                Intent intentswitcher = new Intent(MainActivity.this, ListActivity.class);
+                SharedPreferences sharedPref = getContext().getSharedPreferences("myPrefs", Context.MODE_PRIVATE);
+                String nearbyUsers = sharedPref.getString("nearbyUsers", "");
+                intentswitcher.putExtra("nearbyUsers", nearbyUsers);
+                startActivity(intentswitcher);
             }
         });
 
@@ -144,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
         return true;
     }
 
-    public Context getContext(){
+    public Context getContext() {
         return this;
     }
 
@@ -157,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
         // 3 - Location update - {"responseid":3,"status":"success","nearbyUsers":["Testikakkone"],"msg":"Location updated."}
         try {
             obj = new JSONObject(output);
-            Log.e("ApiHelper responsejson",obj.toString());
+            Log.e("ApiHelper responsejson", obj.toString());
             Log.e("ApiHelper responseid", String.valueOf(obj.getInt("responseid")));
             Toast.makeText(this, obj.getString("msg"), Toast.LENGTH_SHORT).show();
             //mInfoText.setText(obj.getString("msg"));
@@ -168,26 +176,26 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
 
         try {
 
-            if(obj != null) {
-                if(obj.getString("status").toLowerCase().equals("failed")){
+            if (obj != null) {
+                if (obj.getString("status").toLowerCase().equals("failed")) {
                     Toast.makeText(this, obj.getString("msg"), Toast.LENGTH_SHORT).show();
                 }
             }
 
-            switch(obj != null ? obj.getInt("responseid") : 0){
+            switch (obj != null ? obj.getInt("responseid") : 0) {
                 case 1:
-                    Log.e("ApiHelperhandleresponse","user creation response");
+                    Log.e("ApiHelperhandleresponse", "user creation response");
                     break;
                 case 2:
                     //Do this and this
-                    if (Objects.equals(obj != null ? obj.getString("status") : null, "success")){
+                    if (Objects.equals(obj != null ? obj.getString("status") : null, "success")) {
                         ((UserData) this.getApplication()).setmUserID(obj.getInt("id"));
                     }
                     break;
                 case 3:
                     Log.e("resp", String.valueOf(obj.getJSONArray("nearbyUsers")));
 
-                    Intent intentswitcher = new Intent(MainActivity.this,ListActivity.class);
+                    Intent intentswitcher = new Intent(MainActivity.this, ListActivity.class);
                     intentswitcher.putExtra("nearbyUsers", obj.getJSONArray("nearbyUsers").toString());
                     startActivity(intentswitcher);
                     break;
@@ -196,9 +204,10 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
             }
         } catch (JSONException e) {
             e.printStackTrace();
-            Toast.makeText(this, "An error occured!"+e.toString(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "An error occured!" + e.toString(), Toast.LENGTH_SHORT).show();
         }
     }
+
     private void createLocationRequest() {
         mLocationRequest = new LocationRequest();
         mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL);
@@ -222,6 +231,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
         Intent intent = new Intent(this, LocationUpdatesBroadcastReceiver.class);
         return PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
+
     public void requestLocationUpdates() {
         try {
             Log.i("Main", "Starting location updates");
@@ -231,9 +241,13 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
             e.printStackTrace();
         }
     }
+
     public void removeLocationUpdates() {
-        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient,
-                getPendingIntent());
+        if (mGoogleApiClient != null) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient,
+                    getPendingIntent());
+        }
+
     }
 
     @Override

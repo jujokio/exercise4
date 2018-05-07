@@ -86,7 +86,10 @@ public class LocationUpdatesBroadcastReceiver extends BroadcastReceiver implemen
                     break;
                 case 3:
                     Log.e("resp", String.valueOf(obj.getJSONArray("nearbyUsers")));
-
+                    SharedPreferences sharedPref = baseContext.getSharedPreferences("myPrefs", Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPref.edit();
+                    editor.putString("nearbyUsers", obj.getJSONArray("nearbyUsers").toString());
+                    editor.commit();
                     if (obj.getJSONArray("nearbyUsers").length() > 0) {
                         NotificationManager notificationManager = (NotificationManager) baseContext.getSystemService(NOTIFICATION_SERVICE);
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
