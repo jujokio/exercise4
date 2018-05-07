@@ -33,6 +33,7 @@ public class LocationUpdatesBroadcastReceiver extends BroadcastReceiver implemen
     Context baseContext;
     private static final String TAG = "LUBroadcastReceiver";
 
+
     @Override
     public void onReceive(Context context, Intent intent) {
         baseContext = context;

@@ -183,15 +183,21 @@ public class MainActivity extends FragmentActivity implements AsyncResponse, Goo
         return this;
     }
 
+    public void updateMarker(double lat, double lon){
+        LatLng latLng = new LatLng(lat, lon);
+        googleMap.addMarker(new MarkerOptions().position(myPosition).title("Start"));
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 12.0f));
+    }
+
     @Override
     public void processFinish(String output) {
-        LatLng latLng = new LatLng(65.0556658, 25.4688492);
-
-        myPosition = new LatLng(65.0556658, 25.4688492);
-
-        googleMap.addMarker(new MarkerOptions().position(myPosition).title("Start"));
-        float zoomLevel = 16.0f; //This goes up to 21
-        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 12.0f));
+        sharedPref = this.getSharedPreferences("myPrefs", Context.MODE_PRIVATE);
+        double lat = Double.parseDouble(sharedPref.getString("lat", "0"));
+        double lon = Double.parseDouble(sharedPref.getString("lon", "0"));
+        updateMarker(lat, lon);
+//        LatLng latLng = new LatLng(65.0556658, 25.4688492);
+//
+//        myPosition = new LatLng(65.0556658, 25.4688492);
         JSONObject obj = null;
         //response ID:t ja esimerkki responset
         // 1 - Create user - {"responseid":1,"status":"success","id":41,"username":"testi","msg":"Successfully created new account. Welcome testi"}
@@ -322,10 +328,10 @@ public class MainActivity extends FragmentActivity implements AsyncResponse, Goo
         }
         googleMap.setMyLocationEnabled(true);
         googleMap.getUiSettings().setZoomControlsEnabled(true);
-        LatLng latLng = new LatLng(65.0556658, 25.4688492);
-
-        myPosition = new LatLng(65.0556658, 25.4688492);
-        float zoomLevel = 16.0f; //This goes up to 21
+        sharedPref = this.getSharedPreferences("myPrefs", Context.MODE_PRIVATE);
+        double lat = Double.parseDouble(sharedPref.getString("lat", "0"));
+        double c = Double.parseDouble(sharedPref.getString("lon", "0"));
+        LatLng latLng = new LatLng(lat, lat);
         googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 12.0f));
     }
 
