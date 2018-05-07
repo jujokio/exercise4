@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle" >
+    <!-- border for the whole listview -->
+    <!-- change android:color="#00FF00" for different border, width for thickness of the border  -->
+    <solid android:color="#FFF" />
+    <stroke android:width="4dip" android:color="#FF0000" />
+</shape>

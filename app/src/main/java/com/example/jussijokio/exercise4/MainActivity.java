@@ -1,28 +1,17 @@
 package com.example.jussijokio.exercise4;
 
-import android.Manifest;
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.media.RingtoneManager;
-import android.net.Uri;
-import android.preference.PreferenceManager;
-import android.sax.StartElementListener;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.telecom.Call;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -34,11 +23,11 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.DecimalFormat;
-import java.util.List;
 import java.util.Objects;
 
 
@@ -47,8 +36,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
     public TextView saveMessageField;
     public TextView receiveMessageField;
     public Button saveMessageButton;
-    private SharedPreferences preferences;
-    private String message;
     public Location last;
     public Button intentswitcher;
     public CallAPI apihelper;
@@ -58,13 +45,24 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
     private static final long UPDATE_INTERVAL = 10 * 1000;
     private static final long FASTEST_UPDATE_INTERVAL = UPDATE_INTERVAL / 2;
     private static final long MAX_WAIT_TIME = UPDATE_INTERVAL * 3;
-
-    //eetu liittyi dev tiimiin
+    private String nearbyUsers;
+    String[] username;
+    SharedPreferences sharedPref;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        sharedPref = getContext().getSharedPreferences("myPrefs", Context.MODE_PRIVATE);
+        nearbyUsers = sharedPref.getString("nearbyUsers", "");
+        try {
+            JSONArray array = new JSONArray(nearbyUsers);
+            username=toStringArray(array);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        TextView usersText = (TextView) findViewById(R.id.nearbyUsers);
+        usersText.setText(String.valueOf(username.length) + " Nearby friends");
         if (ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
@@ -80,13 +78,9 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
         if (!CheckLoginActive()) {
             Intent gotoLogin = new Intent(this, LoginActivity.class);
             startActivity(gotoLogin);
-//            finish();
         }
-        // this is coding
-        //init ui elements
 
         saveMessageField = (TextView) findViewById(R.id.SaveMessageField);
-        receiveMessageField = (TextView) findViewById(R.id.ReceiveMessageField);
         saveMessageButton = (Button) findViewById(R.id.SaveMessage);
         intentswitcher = (Button) findViewById(R.id.intent_switcher);
 
@@ -94,8 +88,8 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
             @Override
             public void onClick(View v) {
                 Intent intentswitcher = new Intent(MainActivity.this, ListActivity.class);
-                SharedPreferences sharedPref = getContext().getSharedPreferences("myPrefs", Context.MODE_PRIVATE);
-                String nearbyUsers = sharedPref.getString("nearbyUsers", "");
+                sharedPref = getContext().getSharedPreferences("myPrefs", Context.MODE_PRIVATE);
+                nearbyUsers = sharedPref.getString("nearbyUsers", "");
                 intentswitcher.putExtra("nearbyUsers", nearbyUsers);
                 startActivity(intentswitcher);
             }
@@ -105,6 +99,8 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
             @Override
             public void onClick(View view) {
                 removeLocationUpdates();
+                Toast.makeText(getBaseContext(), "HangOut stopped updating your location.",
+                        Toast.LENGTH_LONG).show();
                 if (last != null && saveMessageField.getText().length() >= 1) {
                     SaveMessage(last);
                 } else {
@@ -114,6 +110,17 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
         });
         buildGoogleApiClient();
 
+    }
+
+    public static String[] toStringArray(JSONArray array) {
+        if(array==null)
+            return null;
+
+        String[] arr=new String[array.length()];
+        for(int i=0; i<arr.length; i++) {
+            arr[i]=array.optString(i);
+        }
+        return arr;
     }
 
     private String getPreferencesKey(Location last) {
@@ -139,8 +146,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
     }
 
     private void SaveMessage(Location last) {
-        String key = getPreferencesKey(last);
-        preferences.edit().putString(key, saveMessageField.getText().toString()).apply();
         Toast.makeText(getBaseContext(), "Message saved.",
                 Toast.LENGTH_LONG).show();
         saveMessageField.setText(null);
