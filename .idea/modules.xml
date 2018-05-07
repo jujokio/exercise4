@@ -2,8 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/HangOut.iml" filepath="$PROJECT_DIR$/HangOut.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/exercise4.iml" filepath="$PROJECT_DIR$/exercise4.iml" />
+      <module fileurl="file://C:\MobiSocial\HangOut\exercise4.iml" filepath="C:\MobiSocial\HangOut\exercise4.iml" />
     </modules>
   </component>
 </project>

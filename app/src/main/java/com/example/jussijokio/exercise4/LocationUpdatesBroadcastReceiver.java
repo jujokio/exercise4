@@ -38,7 +38,6 @@ public class LocationUpdatesBroadcastReceiver extends BroadcastReceiver implemen
         baseContext = context;
         SharedPreferences sharedPref = context.getSharedPreferences("myPrefs", Context.MODE_PRIVATE);
         int mUserID = sharedPref.getInt("id", 0);
-
         if (intent != null) {
             LocationResult result = LocationResult.extractResult(intent);
             if (result != null) {
@@ -49,6 +48,11 @@ public class LocationUpdatesBroadcastReceiver extends BroadcastReceiver implemen
                 apihelper.setPayload(new JSONObject(), "GET");
                 apihelper.delegate = this;
                 apihelper.execute(String.format("location/update?id=%s&lat=%s&lon=%s", mUserID, lastLoc.getLatitude(), lastLoc.getLongitude()));
+
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putString("latitude", String.valueOf(lastLoc.getLatitude()));
+                editor.putString("longitude", String.valueOf(lastLoc.getLongitude()));
+                editor.commit();
             }
 
         }

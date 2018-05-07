@@ -1,5 +1,7 @@
 package com.example.jussijokio.exercise4;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -10,8 +12,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -22,6 +24,12 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -31,8 +39,8 @@ import java.text.DecimalFormat;
 import java.util.Objects;
 
 
-public class MainActivity extends AppCompatActivity implements AsyncResponse, GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+public class MainActivity extends FragmentActivity implements AsyncResponse, GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener, OnMapReadyCallback {
     public TextView saveMessageField;
     public TextView receiveMessageField;
     public Button saveMessageButton;
@@ -48,7 +56,10 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
     private String nearbyUsers;
     String[] username;
     SharedPreferences sharedPref;
+    GoogleMap googleMap;
+    LatLng myPosition;
 
+    @SuppressLint("MissingPermission")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,11 +68,19 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
         nearbyUsers = sharedPref.getString("nearbyUsers", "");
         try {
             JSONArray array = new JSONArray(nearbyUsers);
-            username=toStringArray(array);
+            username = toStringArray(array);
         } catch (Exception e) {
             e.printStackTrace();
         }
         TextView usersText = (TextView) findViewById(R.id.nearbyUsers);
+        SupportMapFragment fm = (SupportMapFragment)
+                getSupportFragmentManager().findFragmentById(R.id.map);
+
+        // Getting GoogleMap object from the fragment
+        fm.getMapAsync(this);
+
+
+        // Enabling MyLocation Layer of Google Map
         if (username!=null) {
             usersText.setText(String.valueOf(username.length) + " Nearby friends");
         }
@@ -78,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
         s = ((UserData) this.getApplication()).getmUserID();
         apihelper.delegate = this;
         if (!CheckLoginActive()) {
-            Intent gotoLogin = new Intent(this, LoginActivity.class);
+            Intent gotoLogin = new Intent(this.getContext(), LoginActivity.class);
             startActivity(gotoLogin);
         }
 
@@ -108,6 +127,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
                 } else {
                     Log.e("locationMessage", "null pointers!");
                 }
+                finish();
             }
         });
         buildGoogleApiClient();
@@ -115,12 +135,12 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
     }
 
     public static String[] toStringArray(JSONArray array) {
-        if(array==null)
+        if (array == null)
             return null;
 
-        String[] arr=new String[array.length()];
-        for(int i=0; i<arr.length; i++) {
-            arr[i]=array.optString(i);
+        String[] arr = new String[array.length()];
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = array.optString(i);
         }
         return arr;
     }
@@ -165,6 +185,13 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
 
     @Override
     public void processFinish(String output) {
+        LatLng latLng = new LatLng(65.0556658, 25.4688492);
+
+        myPosition = new LatLng(65.0556658, 25.4688492);
+
+        googleMap.addMarker(new MarkerOptions().position(myPosition).title("Start"));
+        float zoomLevel = 16.0f; //This goes up to 21
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 12.0f));
         JSONObject obj = null;
         //response ID:t ja esimerkki responset
         // 1 - Create user - {"responseid":1,"status":"success","id":41,"username":"testi","msg":"Successfully created new account. Welcome testi"}
@@ -261,7 +288,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
     protected void onDestroy() {
         super.onDestroy();
         Log.d("Main", "destroying");
-        removeLocationUpdates();
+        //removeLocationUpdates();
     }
 
     @Override
@@ -277,6 +304,33 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        googleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        googleMap.setMyLocationEnabled(true);
+        googleMap.getUiSettings().setZoomControlsEnabled(true);
+        LatLng latLng = new LatLng(65.0556658, 25.4688492);
+
+        myPosition = new LatLng(65.0556658, 25.4688492);
+        float zoomLevel = 16.0f; //This goes up to 21
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 12.0f));
+    }
+
+    @Override
+    public void onPointerCaptureChanged(boolean hasCapture) {
 
     }
 }
