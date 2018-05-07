@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:textAlignment="center"
+    android:background="#78909c"
     tools:context="com.example.jussijokio.exercise4.MainActivity">
 
     <TextView

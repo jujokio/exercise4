@@ -41,8 +41,6 @@ public class LoginActivity extends AppCompatActivity implements AsyncResponse {
         setContentView(R.layout.activity_login);
         username = (TextView) findViewById(R.id.UsernameField);
         password = (TextView) findViewById(R.id.PasswordField);
-        username.setText("testi");
-        password.setText("testi");
         loginBtn = (Button) findViewById(R.id.LoginButton);
         registerBtn = (Button) findViewById(R.id.RegisterButton);
         spinner = (ProgressBar)findViewById(R.id.progressBar1);

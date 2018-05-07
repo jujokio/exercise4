@@ -62,7 +62,9 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse, Go
             e.printStackTrace();
         }
         TextView usersText = (TextView) findViewById(R.id.nearbyUsers);
-        usersText.setText(String.valueOf(username.length) + " Nearby friends");
+        if (username!=null) {
+            usersText.setText(String.valueOf(username.length) + " Nearby friends");
+        }
         if (ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
